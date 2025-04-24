@@ -1,0 +1,37 @@
+pipeline {
+  agent any
+  environment {
+    REGISTRY = 'docker.io/yourdockerhub'
+    IMAGE_NAME = 'sampleapp'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        git branch: 'main', credentialsId: 'github-creds', url: 'https://github.com/your-username/your-repo.git'
+      }
+    }
+
+    stage('Build & Test') {
+      steps {
+        sh 'docker build -t $REGISTRY/$IMAGE_NAME:dev .'
+        // Add test commands here
+      }
+    }
+
+    stage('Push to DockerHub') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+          sh 'echo $PASSWORD | docker login -u $USERNAME --password-stdin'
+          sh 'docker push $REGISTRY/$IMAGE_NAME:dev'
+        }
+      }
+    }
+
+    stage('Deploy to Kubernetes') {
+      steps {
+        sh 'kubectl apply -f k8s/dev-deployment.yaml'
+      }
+    }
+  }
+}
