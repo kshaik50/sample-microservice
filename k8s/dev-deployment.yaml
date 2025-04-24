@@ -1,38 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sample-app
-  labels:
-    app: sample-app
+  name: react-frontend
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: sample-app
+      app: react-frontend
   template:
     metadata:
       labels:
-        app: sample-app
+        app: react-frontend
     spec:
       containers:
-        - name: sample-app
-          image: yourdockerhub/sampleapp:dev
-          ports:
-            - containerPort: 3000
-          resources:
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
+      - name: react-frontend
+        image: yourdockerhub/react-frontend:dev
+        ports:
+        - containerPort: 3000
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: sample-app-service
+  name: react-frontend-service
 spec:
-  selector:
-    app: sample-app
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 3000
   type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 3000
+  selector:
+    app: react-frontend
